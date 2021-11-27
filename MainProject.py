@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# coding: utf-8
 #
 # pin 3 , 5 for LCD
 # pin 7   for DHT11
@@ -8,7 +9,10 @@
 #
 #
 #My library
-import MyComponent, MyST7735, MyLCD1602
+import MyComponent
+import MyST7735
+import MyLCD1602
+import MyOpenCV
 
 import RPi.GPIO as GPIO
 import time
@@ -28,6 +32,8 @@ time_changeLCD = time.time()   # next time for changing LCD
 
 LEDon = False
 displayLCD = 0
+
+OpenCV_Count = 0
 
 ########## Function ##########
 
@@ -75,7 +81,7 @@ global disp
 disp = MyST7735.init_ST7735()
 
 #Display the Login Title and Member
-MyST7735.DisplayLogin(disp)
+#MyST7735.DisplayLogin(disp)
 
 ########## Main Program ##########
 try:
@@ -90,13 +96,14 @@ try:
         if time.time() >= time_closeLED and LEDon:
             LEDon = MyComponent.LEDonOff(False)
 
+        OpenCV_Count = MyOpenCV.DetectfaceMask(0)
+
         # Change LCD
         if time.time() >= time_changeLCD:
             changeLCD()
 
         # Display
         MyST7735.DisplayDHT11(disp, humi, temp)
-        time.sleep(0.1)
 
 except KeyboardInterrupt:
     pass
