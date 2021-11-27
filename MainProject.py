@@ -57,11 +57,6 @@ def changeLCD():
     if displayLCD > 1:
         displayLCD = 0
 
-########## Init ##########
-
-global disp
-disp = MyST7735.init_ST7735()
-
 
 ########## GPIO init ##########
 
@@ -72,6 +67,15 @@ pinPIR = 17    # 11 號腳
 GPIO.setup(pinPIR, GPIO.IN)
 
 GPIO.add_event_detect(pinPIR, GPIO.RISING,callback = getPIR, bouncetime=50)
+
+
+########## Init ##########
+
+global disp
+disp = MyST7735.init_ST7735()
+
+#Display the Login Title and Member
+MyST7735.DisplayLogin(disp)
 
 ########## Main Program ##########
 try:
