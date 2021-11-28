@@ -46,6 +46,7 @@ ultraSoundRange = 100
 
 # For checking Mask
 OpenCV_Detecting = False
+DisplayCameraInSt7735 = False
 
 cameraNumber = 0
 
@@ -131,11 +132,19 @@ def DetectingMask():
 
 def CheckingInput(num):
     global cameraNumber
+    global disp
+    global DisplayCameraInSt7735
     
     if num != "-":
         print(num)
     
-    if num == "A":
+    if num == "1":
+        MyOpenCV.DisplayCamera(False)
+        DisplayCameraInSt7735 = False
+    elif num == "2":
+        MyOpenCV.DisplayCamera(True, disp)
+        DisplayCameraInSt7735 = True
+    elif num == "A":
         cameraNumber = 0
     elif num == "B":
         cameraNumber = 2
@@ -208,7 +217,8 @@ try:
             changeLCD()
 
         # Display
-        MyST7735.DisplayDHT11(disp, humi, temp)
+        if not DisplayCameraInSt7735:
+            MyST7735.DisplayDHT11(disp, humi, temp)
 
         # if no OpenCV detecting , it will wait for 0.1s
         if not OpenCV_Detecting:

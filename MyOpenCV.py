@@ -7,8 +7,10 @@ import math
 import os
 import time
 import random
+from PIL import Image
 
 import MyEmail
+import MyST7735
 
 face_cascade = cv2.CascadeClassifier('OpenCV/frontalface.xml')
 eye_cascade = cv2.CascadeClassifier('OpenCV/eye.xml')
@@ -17,12 +19,28 @@ upper_body = cv2.CascadeClassifier('OpenCV/upperbody.xml')
 
 saveImg = 0
 
+disp = None
+display = False
+
+# For setting the display
+def DisplayCamera(displayCamera, Mydisp = None):
+    global display
+    global disp
+    display = displayCamera
+    if Mydisp is not None:
+        disp = Mydisp
+        print("Display Camera")
+    else:
+        print("Closing Display")
+
 def DetectfaceMask(capNum):
     global face_cascade
     global eye_cascade
     global mouth_cascade
     global upper_body
     global saveImg
+    global display
+    global disp
     
     # Adjust threshold value in range 80 to 105 based on your light.
     bw_threshold = 90
@@ -48,7 +66,7 @@ def DetectfaceMask(capNum):
     ret, img = cap.read()
     img = cv2.flip(img, 1)
 
-# Convert Image into gray
+    # Convert Image into gray
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     # Convert image in black and white
@@ -89,6 +107,11 @@ def DetectfaceMask(capNum):
     #print(len(faces), len(faces_bw), len(mouth_rects))
 
     cv2.imshow('Mask Detection', img)
+    
+    if display == True and disp is not None:
+        array = np.array(img)          # array is a numpy array 
+        image2 = Image.fromarray(array) 
+        MyST7735.DisplayCamera(disp, image2)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         pass

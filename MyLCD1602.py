@@ -40,7 +40,7 @@ def  DisplayLCD_OpenCV(masked):
     try:
         if masked:
             lcd.text("Welcome ! (OvO)b", 1)
-            lcd.text("Thank You for wearing MASK", 2)
+            lcd.text("Thank for MASK ", 2)
         else:
             lcd.text("Welcome ! (O^O)", 1)
             lcd.text("Please wear MASK !", 2)
