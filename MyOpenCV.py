@@ -99,12 +99,21 @@ def DetectfaceMask(capNum):
     #cv2.destroyAllWindows()
     return result
 
-def ScreenShot():
+def ScreenShot(CamNum):
+    camera = cv2.VideoCapture(CamNum)
+    return_value, image = camera.read()
+    dateTime = time.strftime('%d%m%y_%H%M%S')
+    cv2.imwrite(str(dateTime)+'.png', image)
+    print("Save Compoleted")
+
+
+def ScreenShotwithEmail():
     global saveImg
     dateTime = time.strftime('%d%m%y_%H%M%S')
     cv2.imwrite(str(dateTime)+'.png', saveImg)
     print("Save Compoleted")
     MyEmail.SendEmail(str(dateTime)+'.png')
+
 
 def CloseAllWindoes():
     cv2.destroyAllWindows()

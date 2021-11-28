@@ -5,6 +5,8 @@
 # pin 7   for DHT11
 # pin 11 for PIR
 # pin 13 for LED
+# pin 15 for USoundTrig
+# pin 16 for USoundEcho
 # pin 18, 19, 22, 23, 24 for ST7735
 # pin 35(13), 33(19), 31(26), 29(5) for Keypad -
 # pin 40(21), 38(20), 26(16), 32(21) for Keypad -
@@ -14,13 +16,14 @@ import MyComponent
 import MyST7735
 import MyLCD1602
 import MyOpenCV
+import MyKeypad
 
 import RPi.GPIO as GPIO
 import time
 
 ########## Time Variable ##########
 
-time_addNextDHT11 = 2            # every 2 second get DHT11
+time_addNextDHT11 = 4            # every 4 second get DHT11
 time_getDHT11 = time.time()    # next time for getting  DHT11
 
 time_addNextLED = 10               # every 10 second close LED
@@ -43,6 +46,8 @@ ultraSoundRange = 100
 
 # For checking Mask
 OpenCV_Detecting = False
+
+cameraNumber = 0
 
 noFace = 0
 noMask = 0
@@ -110,9 +115,10 @@ def DetectingMask():
         # add the count
         customCountNoMask = customCountNoMask + 1
         time_changeLCD = time.time() + time_addNextUltraSound
+        MyComponent.Buzzer(True)
         # if somebody have no mask, it will take a photo
         # it will send an Email
-        MyOpenCV.ScreenShot()
+        MyOpenCV.ScreenShotwithEmail()
     else:
         print("Have Mask")
         MyLCD1602.DisplayLCD_OpenCV(True)
@@ -121,6 +127,22 @@ def DetectingMask():
     noFace = 0
     noMask = 0
     Mask = 0
+
+
+def CheckingInput(num):
+    global cameraNumber
+    
+    if num != "-":
+        print(num)
+    
+    if num == "A":
+        cameraNumber = 0
+    elif num == "B":
+        cameraNumber = 2
+    elif num == "C":
+        MyOpenCV.ScreenShot(cameraNumber)
+    elif num == "D":
+        MyOpenCV.ScreenShotwithEmail()
 
 ########## GPIO init ##########
 
@@ -138,13 +160,17 @@ GPIO.add_event_detect(pinPIR, GPIO.RISING,callback = getPIR, bouncetime=50)
 global disp
 disp = MyST7735.init_ST7735()
 
-#Display the Login Title and Member
-#MyST7735.DisplayLogin(disp)
+# Display the Login Title and Member
+# Close Testing
+MyST7735.DisplayLogin(disp)
+MyComponent.Buzzer(False)
 
 ########## Main Program ##########
 try:
     while True:
         
+        CheckingInput(MyKeypad.DetectKeypad())
+
         # Get DHT11
         if time.time() >= time_getDHT11:
             time_getDHT11 = time.time() + time_addNextDHT11
@@ -158,13 +184,14 @@ try:
         if not OpenCV_Detecting:
             ultraSoundnow = MyComponent.Ultrasound()
             if ultraSoundnow <= ultraSoundRange:
+                # Close Testing
                 OpenCV_Detecting = True
                 time_getUltraSound = time.time() + time_addNextUltraSound
             else:
                 pass
         else:
             if time.time() <= time_getUltraSound:
-                AddOpenCVCount(MyOpenCV.DetectfaceMask(0))
+                AddOpenCVCount(MyOpenCV.DetectfaceMask(cameraNumber))
             else:
                 # it will check the distance, if less than 100 will keep on detect
                 DetectingMask()
@@ -172,7 +199,7 @@ try:
                 if ultraSoundnow <= ultraSoundRange:
                     OpenCV_Detecting = True
                     time_getUltraSound = time.time() + time_addNextUltraSound
-                    AddOpenCVCount(MyOpenCV.DetectfaceMask(0))
+                    AddOpenCVCount(MyOpenCV.DetectfaceMask(cameraNumber))
                 else:
                     OpenCV_Detecting = False
 
