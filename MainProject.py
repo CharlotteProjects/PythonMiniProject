@@ -4,9 +4,10 @@
 # pin 3 , 5 for LCD
 # pin 7   for DHT11
 # pin 11 for PIR
-# pint 13 for LED
+# pin 13 for LED
 # pin 18, 19, 22, 23, 24 for ST7735
-#
+# pin 35(13), 33(19), 31(26), 29(5) for Keypad -
+# pin 40(21), 38(20), 26(16), 32(21) for Keypad -
 #
 #My library
 import MyComponent
@@ -26,14 +27,28 @@ time_addNextLED = 10               # every 10 second close LED
 time_closeLED = time.time()      # next time for closing LED
 
 time_addNextLCD = 6                 # every 6 second change LCD
-time_changeLCD = time.time()   # next time for changing LCD
+time_changeLCD = time.time()  # next time for changing LCD
+
+time_addNextUltraSound = 8    # CD 8 second to get Next UltraSound 
+time_getUltraSound = time.time() 
 
 ########## Control Variable ##########
 
 LEDon = False
 displayLCD = 0
 
-OpenCV_Count = 0
+# less than 100 cm ,it will start OpenCV
+ultraSoundnow = 0
+ultraSoundRange = 100
+
+# For checking Mask
+OpenCV_Detecting = False
+
+noFace = 0
+noMask = 0
+Mask = 0
+customCount = 0
+customCountNoMask = 0
 
 ########## Function ##########
 
@@ -58,11 +73,54 @@ def changeLCD():
         MyLCD1602.DisplayLCD_DHT11(humi, temp)
     else:
         pass
-    
     displayLCD += 1
     if displayLCD > 1:
         displayLCD = 0
 
+# For cal count
+def AddOpenCVCount(num):
+    global noFace
+    global noMask
+    global Mask
+    
+    if num == 0:
+        noFace = noFace + 1
+    elif num == 1:
+        Mask = Mask + 1
+    else:
+        noMask = noMask + 1
+
+# For detect somebody have mask or not
+def DetectingMask():
+    global noFace
+    global noMask
+    global Mask
+    global customCount
+    global customCountNoMask
+    print("noFace {0}, noMask {1}, Mask {2}".format(noFace, noMask, Mask))
+    
+    # custome add one
+    customCount = customCount + 1
+    
+    if noFace > noMask + Mask:
+        print("No Detect")
+    elif noMask >= Mask:
+        print("No Mask")
+        MyLCD1602.DisplayLCD_OpenCV(False)
+        # add the count
+        customCountNoMask = customCountNoMask + 1
+        time_changeLCD = time.time() + time_addNextUltraSound
+        # if somebody have no mask, it will take a photo
+        # it will send an Email
+        MyOpenCV.ScreenShot()
+    else:
+        print("Have Mask")
+        MyLCD1602.DisplayLCD_OpenCV(True)
+        time_changeLCD = time.time() + time_addNextUltraSound
+    
+    noFace = 0
+    noMask = 0
+    Mask = 0
 
 ########## GPIO init ##########
 
@@ -96,7 +154,27 @@ try:
         if time.time() >= time_closeLED and LEDon:
             LEDon = MyComponent.LEDonOff(False)
 
-        OpenCV_Count = MyOpenCV.DetectfaceMask(0)
+        # UltraSound and OpenCV
+        if not OpenCV_Detecting:
+            ultraSoundnow = MyComponent.Ultrasound()
+            if ultraSoundnow <= ultraSoundRange:
+                OpenCV_Detecting = True
+                time_getUltraSound = time.time() + time_addNextUltraSound
+            else:
+                pass
+        else:
+            if time.time() <= time_getUltraSound:
+                AddOpenCVCount(MyOpenCV.DetectfaceMask(0))
+            else:
+                # it will check the distance, if less than 100 will keep on detect
+                DetectingMask()
+                ultraSoundnow = MyComponent.Ultrasound()
+                if ultraSoundnow <= ultraSoundRange:
+                    OpenCV_Detecting = True
+                    time_getUltraSound = time.time() + time_addNextUltraSound
+                    AddOpenCVCount(MyOpenCV.DetectfaceMask(0))
+                else:
+                    OpenCV_Detecting = False
 
         # Change LCD
         if time.time() >= time_changeLCD:
@@ -105,11 +183,16 @@ try:
         # Display
         MyST7735.DisplayDHT11(disp, humi, temp)
 
+        # if no OpenCV detecting , it will wait for 0.1s
+        if not OpenCV_Detecting:
+            time.sleep(0.1)
+
 except KeyboardInterrupt:
     pass
 
 finally:
     MyLCD1602.CloseLCD()
+    MyOpenCV.CloseAllWindoes()
     print("End of Program")
     GPIO.cleanup()
 

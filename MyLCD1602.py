@@ -34,7 +34,19 @@ def  DisplayLCD_DHT11(humidity, temperature):
     except:
         print("LCD have some Error")
 
-
+# LCD Display OpenCV
+def  DisplayLCD_OpenCV(masked):
+    global lcd
+    try:
+        if masked:
+            lcd.text("Welcome ! (OvO)b", 1)
+            lcd.text("Thank You for wearing MASK", 2)
+        else:
+            lcd.text("Welcome ! (O^O)", 1)
+            lcd.text("Please wear MASK !", 2)
+        
+    except:
+        print("LCD have some Error")
 
 def CloseLCD():
     global lcd

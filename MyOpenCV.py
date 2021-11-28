@@ -8,17 +8,21 @@ import os
 import time
 import random
 
+import MyEmail
+
 face_cascade = cv2.CascadeClassifier('OpenCV/frontalface.xml')
 eye_cascade = cv2.CascadeClassifier('OpenCV/eye.xml')
 mouth_cascade = cv2.CascadeClassifier('OpenCV/mouth.xml')
 upper_body = cv2.CascadeClassifier('OpenCV/upperbody.xml')
 
+saveImg = 0
+
 def DetectfaceMask(capNum):
-    
     global face_cascade
     global eye_cascade
     global mouth_cascade
     global upper_body
+    global saveImg
     
     # Adjust threshold value in range 80 to 105 based on your light.
     bw_threshold = 90
@@ -74,10 +78,12 @@ def DetectfaceMask(capNum):
             roi_color = img[y:y + h, x:x + w]
             for (mx, my, mw, mh) in mouth_rects:
                 if(len(faces) == 1 and len(faces_bw) == 0 and y < my < y + h or len(mouth_rects) >= 3 ):
-            # Face and Lips are detected but lips coordinates are within face cordinates which means lips prediction is true and
-            # person is not waring mask
+                    # Face and Lips are detected but lips coordinates are within face cordinates which means lips prediction is true and
+                    # person have not waring mask
                     result = 2
                     cv2.putText(img, not_weared_mask, org, font, font_scale, not_weared_mask_font_color, thickness, cv2.LINE_AA)
+                    # For save image
+                    saveImg = img
                     break
     # print the detect
     #print(len(faces), len(faces_bw), len(mouth_rects))
@@ -91,6 +97,14 @@ def DetectfaceMask(capNum):
     # Release video
     #cap.release()
     #cv2.destroyAllWindows()
-    
     return result
 
+def ScreenShot():
+    global saveImg
+    dateTime = time.strftime('%d%m%y_%H%M%S')
+    cv2.imwrite(str(dateTime)+'.png', saveImg)
+    print("Save Compoleted")
+    MyEmail.SendEmail(str(dateTime)+'.png')
+
+def CloseAllWindoes():
+    cv2.destroyAllWindows()
