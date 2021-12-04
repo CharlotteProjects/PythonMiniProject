@@ -3,6 +3,7 @@
 import RPi.GPIO as GPIO
 import Adafruit_DHT
 import time
+import pygame
 
 GPIO.setwarnings(False)
 
@@ -25,17 +26,26 @@ GPIO.setup(pin_USoundEcho, GPIO.IN)
 pinBuzzer = 26 # pin 37
 GPIO.setup(pinBuzzer, GPIO.OUT)
 
+humi = 0
+temp = 0
+
 # Function for Get DHT11
 def GetDHT11():
     global pinDHT11
+    global humi 
+    global temp
+
     sensor = Adafruit_DHT.DHT11
-    humidity, temperature = Adafruit_DHT.read_retry(sensor, pinDHT11)
-    #humidity, temperature = Adafruit_DHT.read(sensor, pin)
+    #humidity, temperature = Adafruit_DHT.read_retry(sensor, pinDHT11)
+    humidity, temperature = Adafruit_DHT.read(sensor, pinDHT11)
     if humidity is not None and temperature is not None:
         print('Temp={0:0.1f} C*  Humidity={1:0.1f} %'.format(temperature, humidity))
+        humi = humidity
+        temp = temperature
         return humidity, temperature
     else:
-        print('Failed to get reading. Try again!')
+        print('Failed to get reading. return the last record!')
+        return humi, temp
 
 
 # Function for Set LED
@@ -95,3 +105,12 @@ def Buzzer(long):
                 GPIO.output(pinBuzzer, 1)
             for x in range(num):
                 GPIO.output(pinBuzzer, 0)
+
+
+def playMusic():
+    pygame.mixer.init()
+    pygame.mixer.music.load('PalletTown.mp3')
+    pygame.mixer.music.play()
+    
+def stopMusic():
+    pygame.mixer.music.stop()

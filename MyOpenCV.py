@@ -22,6 +22,20 @@ saveImg = 0
 disp = None
 display = False
 
+defaultCam = -1
+
+bw_threshold = 90
+
+# User message
+font = cv2.FONT_HERSHEY_SIMPLEX
+org = (30, 30)
+weared_mask_font_color = (255, 255, 255)
+not_weared_mask_font_color = (0, 0, 255)
+thickness = 2
+font_scale = 1
+weared_mask = "Thank You for wearing MASK"
+not_weared_mask = "Please wear MASK "
+
 # For setting the display
 def DisplayCamera(displayCamera, Mydisp = None):
     global display
@@ -41,33 +55,49 @@ def DetectfaceMask(capNum):
     global saveImg
     global display
     global disp
-    
+
     # Adjust threshold value in range 80 to 105 based on your light.
-    bw_threshold = 90
+    global bw_threshold
 
     # User message
-    font = cv2.FONT_HERSHEY_SIMPLEX
-    org = (30, 30)
-    weared_mask_font_color = (255, 255, 255)
-    not_weared_mask_font_color = (0, 0, 255)
-    thickness = 2
-    font_scale = 1
-    weared_mask = "Thank You for wearing MASK"
-    not_weared_mask = "Please wear MASK "
+    global font
+    global org
+    global weared_mask_font_color
+    global not_weared_mask_font_color
+    global thickness
+    global font_scale
+    global weared_mask
+    global not_weared_mask
+    
+    global defaultCam
     # 0 = "No face found"
     # 1 = "weared_mask"
     # 2 = "not_weared_mask"
     result = 0
     
-    # Read video
-    cap = cv2.VideoCapture(capNum)
+    if defaultCam != -1 or defaultCam != 0 :
+        cap = cv2.VideoCapture(defaultCam)
+    else:
+        # Read video
+        cap = cv2.VideoCapture(capNum)
 
     # Get individual frame
     ret, img = cap.read()
     img = cv2.flip(img, 1)
 
     # Convert Image into gray
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    try:
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    except:
+        for i in range (10, 0, -1):
+            try:
+                cap = cv2.VideoCapture(i)
+                ret, img = cap.read()
+                img = cv2.flip(img, 1)
+                gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                defaultCam = i
+            except:
+                print("No Camera {0}".format(i))
 
     # Convert image in black and white
     (thresh, black_and_white) = cv2.threshold(gray, bw_threshold, 255, cv2.THRESH_BINARY)
@@ -123,6 +153,8 @@ def DetectfaceMask(capNum):
     return result
 
 def ScreenShot(CamNum):
+    global nowCarmera
+    nowCarmera = CamNum
     camera = cv2.VideoCapture(CamNum)
     return_value, image = camera.read()
     dateTime = time.strftime('%d%m%y_%H%M%S')
@@ -132,10 +164,14 @@ def ScreenShot(CamNum):
 
 def ScreenShotwithEmail():
     global saveImg
-    dateTime = time.strftime('%d%m%y_%H%M%S')
-    cv2.imwrite(str(dateTime)+'.png', saveImg)
-    print("Save Compoleted")
-    MyEmail.SendEmail(str(dateTime)+'.png')
+    if saveImg is None:
+        print("No Image")
+        return
+    else:
+        dateTime = time.strftime('%d%m%y_%H%M%S')
+        cv2.imwrite(str(dateTime)+'.png', saveImg)
+        print("Save Compoleted")
+        MyEmail.SendEmail(str(dateTime)+'.png')
 
 
 def CloseAllWindoes():

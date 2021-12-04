@@ -32,7 +32,7 @@ time_closeLED = time.time()      # next time for closing LED
 time_addNextLCD = 6                 # every 6 second change LCD
 time_changeLCD = time.time()  # next time for changing LCD
 
-time_addNextUltraSound = 8    # CD 8 second to get Next UltraSound 
+time_addNextUltraSound = 10    # CD 8 second to get Next UltraSound 
 time_getUltraSound = time.time() 
 
 ########## Control Variable ##########
@@ -48,6 +48,7 @@ ultraSoundRange = 100
 OpenCV_Detecting = False
 DisplayCameraInSt7735 = False
 
+# set the daflaut camera
 cameraNumber = 0
 
 noFace = 0
@@ -146,8 +147,10 @@ def CheckingInput(num):
         DisplayCameraInSt7735 = True
     elif num == "A":
         cameraNumber = 0
+        print("Change to Carmera A")
     elif num == "B":
         cameraNumber = 2
+        print("Change to Carmera B")
     elif num == "C":
         MyOpenCV.ScreenShot(cameraNumber)
     elif num == "D":
@@ -171,8 +174,9 @@ disp = MyST7735.init_ST7735()
 
 # Display the Login Title and Member
 # Close Testing
-MyST7735.DisplayLogin(disp)
-MyComponent.Buzzer(False)
+#MyComponent.Buzzer(False)
+#MyComponent.playMusic()
+#MyST7735.DisplayLogin(disp)
 
 ########## Main Program ##########
 try:
@@ -181,7 +185,7 @@ try:
         CheckingInput(MyKeypad.DetectKeypad())
 
         # Get DHT11
-        if time.time() >= time_getDHT11:
+        if time.time() >= time_getDHT11 and not OpenCV_Detecting:
             time_getDHT11 = time.time() + time_addNextDHT11
             humi, temp = MyComponent.GetDHT11()
 
