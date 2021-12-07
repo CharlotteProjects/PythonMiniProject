@@ -109,8 +109,25 @@ def Buzzer(long):
 
 def playMusic():
     pygame.mixer.init()
-    pygame.mixer.music.load('PalletTown.mp3')
+    pygame.mixer.music.load('Music/PalletTown.mp3')
     pygame.mixer.music.play()
-    
+
+
 def stopMusic():
     pygame.mixer.music.stop()
+
+
+def playSomeoneInMusic():
+    pygame.mixer.init()
+    pygame.mixer.music.load('Music/in.mp3')
+    pygame.mixer.music.play()
+    time.sleep(1)
+    playMusic()
+
+
+def playSomeoneNoMaskMusic():
+    pygame.mixer.init()
+    pygame.mixer.music.load('Music/nomask.mp3')
+    pygame.mixer.music.play()
+    time.sleep(1)
+    playMusic()

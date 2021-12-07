@@ -11,15 +11,19 @@ import adafruit_rgb_display.st7735 as st7735
 from PIL import Image, ImageDraw, ImageFont
 
 # Font
-font_0 = ImageFont.truetype("DejaVuSans.ttf", 12)
+font_0 = ImageFont.truetype("Font/DejaVuSans.ttf", 12)
 # login Title
-font_1 = ImageFont.truetype('AntiqueQuestSt.ttf',16)
+font_1 = ImageFont.truetype('Font/AntiqueQuestSt.ttf',16)
 # Member Name
-font_2 = ImageFont.truetype('DevinneSwash.ttf',14)
-font_2a = ImageFont.truetype('DevinneSwash.ttf',11)
+font_2 = ImageFont.truetype('Font/DevinneSwash.ttf',14)
+font_2a = ImageFont.truetype('Font/DevinneSwash.ttf',11)
 
-font_3 = ImageFont.truetype('Cretino.TTF', 12)
-font_4 = ImageFont.truetype('AceRecords.ttf',12)
+font_3 = ImageFont.truetype('Font/Cretino.TTF', 12)
+font_4 = ImageFont.truetype('Font/AceRecords.ttf',12)
+
+floor_1 = False
+floor_2 = False
+floor_3 = False
 
 def init_ST7735():
     cs_pin = digitalio.DigitalInOut(board.CE0)
@@ -83,7 +87,7 @@ def DisplayLogin(disp):
             color = 255
             pass_1 = True
     
-        img = Image.open("background.jpg")
+        img = Image.open("Picture/background.jpg")
         img = img.resize((width, height), Image.ANTIALIAS)
         draw = ImageDraw.Draw(img)
         
@@ -144,7 +148,7 @@ def DisplayLogin(disp):
             color = 255
             pass_1 = True
     
-        img = Image.open("background.jpg")
+        img = Image.open("Picture/background.jpg")
         img = img.resize((width, height), Image.ANTIALIAS)
         draw = ImageDraw.Draw(img)
         
@@ -214,7 +218,9 @@ def DisplayLogin(disp):
 
 # Display DHT11
 def DisplayDHT11(disp, humidity, temperature):
-    
+    global floor_1
+    global floor_2
+    global floor_3
     global font_0
     font = font_0
     
@@ -230,7 +236,27 @@ def DisplayDHT11(disp, humidity, temperature):
     # White backgound
     #img = Image.new("RGB", (width, height))
     # My Background
-    img = Image.open("background.jpg")
+    img = Image.open("Picture/background.jpg")
+    # Load Image
+    if floor_1:
+        img_floor_1 = Image.open("Picture/light_on_1.jpg")
+    else:
+        img_floor_1 = Image.open("Picture/light_off_1.jpg")
+        
+    if floor_2:
+        img_floor_2 = Image.open("Picture/light_on_2.jpg")
+    else:
+        img_floor_2 = Image.open("Picture/light_off_2.jpg")
+        
+    if floor_3:
+        img_floor_3 = Image.open("Picture/light_on_3.jpg")
+    else:
+        img_floor_3 = Image.open("Picture/light_off_3.jpg")
+    
+    # Resize the picture
+    img_floor_1 = img_floor_1.resize((18, 30), Image.ANTIALIAS)
+    img_floor_2 = img_floor_2.resize((18, 30), Image.ANTIALIAS)
+    img_floor_3 = img_floor_3.resize((18, 30), Image.ANTIALIAS)
     img = img.resize((width, height), Image.ANTIALIAS)
     draw = ImageDraw.Draw(img)
     
@@ -256,6 +282,9 @@ def DisplayDHT11(disp, humidity, temperature):
         fill=MyColor.Color("BLACK"),
     )
     
+    img.paste(img_floor_1, (106 ,0))
+    img.paste(img_floor_2, (124 ,0))
+    img.paste(img_floor_3, (142 ,0))
     disp.image(img)   
     #print("print Temperature completed")
 

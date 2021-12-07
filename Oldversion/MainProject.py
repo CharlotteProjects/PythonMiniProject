@@ -24,7 +24,7 @@ import subprocess
 import time
 import csv
 
-#################### Time Variable ####################
+########## Time Variable ##########
 
 time_addNextDHT11 = 4            # every 4 second get DHT11
 time_getDHT11 = time.time()    # next time for getting  DHT11
@@ -35,20 +35,17 @@ time_closeLED = time.time()      # next time for closing LED
 time_addNextLCD = 6                 # every 6 second change LCD
 time_changeLCD = time.time()  # next time for changing LCD
 
-time_addNextUltraSound = 20    # CD 20 second to get Next UltraSound 
+time_addNextUltraSound = 20    # CD 8 second to get Next UltraSound 
 time_getUltraSound = time.time() 
 
-#################### Control Variable ####################
+########## Control Variable ##########
 
 LEDon = False
 displayLCD = 0
 
 # less than 100 cm ,it will start OpenCV
 ultraSoundnow = 0
-"""
 ultraSoundRange = 100
-"""
-ultraSoundRange = 1
 
 # For checking Mask
 OpenCV_Detecting = False
@@ -57,10 +54,13 @@ DisplayCameraInSt7735 = False
 # set the daflaut camera
 cameraNumber = 0
 
+noFace = 0
+noMask = 0
+Mask = 0
 customCount = 0
 customCountNoMask = 0
 
-#################### Function ####################
+########## Function ##########
 
 #When get PIR
 def getPIR(channel):
@@ -72,7 +72,7 @@ def getPIR(channel):
     if not LEDon:
         LEDon = MyComponent.LEDonOff(True)
 
-#---------------------------------------------- For LCD loop ----------------------------------------------
+# For LCD loop
 def changeLCD():
     global displayLCD, humi, temp, time_changeLCD, time_addNextLCD
     time_changeLCD = time.time() + time_addNextLCD
@@ -86,36 +86,62 @@ def changeLCD():
     displayLCD += 1
     if displayLCD > 1:
         displayLCD = 0
-
-#---------------------------------------------- For detect somebody have mask or not ----------------------------------------------
-def GetOpenCVResult():
-    global customCountNoMask
-    print("open the openCV.csv")
-    result = ""
-    with open('/home/pi/Project/openCVResult.csv', 'r') as file:
+        
+def openCSV():
+    print("open csv")
+    with open('/home/pi/Project/result.csv', 'r') as file:
         csvreader = csv.reader(file)
         header = next(csvreader)
         for row in csvreader:
-            result = row[0]
-            print(result)
-            
-    if result == "not_weared_mask":
+            print(row[0])
+
+# For cal count
+def AddOpenCVCount(num):
+    global noFace
+    global noMask
+    global Mask
+    
+    if num == 0:
+        noFace = noFace + 1
+    elif num == 1:
+        Mask = Mask + 1
+    else:
+        noMask = noMask + 1
+
+# For detect somebody have mask or not
+def DetectingMask():
+    global noFace
+    global noMask
+    global Mask
+    global customCount
+    global customCountNoMask
+    print("noFace {0}, noMask {1}, Mask {2}".format(noFace, noMask, Mask))
+    
+    # custome add one
+    customCount = customCount + 1
+    
+    if noFace > noMask + Mask:
+        print("No Detect")
+    elif noMask >= Mask:
         print("No Mask")
-        customCountNoMask = customCountNoMask + 1
         MyLCD1602.DisplayLCD_OpenCV(False)
+        # add the count
+        customCountNoMask = customCountNoMask + 1
+        time_changeLCD = time.time() + time_addNextUltraSound
         MyComponent.Buzzer(True)
-        MyComponent.playSomeoneNoMaskMusic()
         # if somebody have no mask, it will take a photo
         # it will send an Email
         MyOpenCV.ScreenShotwithEmail()
-        time_changeLCD = time.time() + time_addNextUltraSound
-    elif result == "weared_mask":
+    else:
         print("Have Mask")
         MyLCD1602.DisplayLCD_OpenCV(True)
         time_changeLCD = time.time() + time_addNextUltraSound
+    
+    noFace = 0
+    noMask = 0
+    Mask = 0
 
 
-#---------------------------------------------- Check the Keypad Input ----------------------------------------------
 def CheckingInput(num):
     global cameraNumber
     global disp
@@ -141,7 +167,7 @@ def CheckingInput(num):
     elif num == "D":
         MyOpenCV.ScreenShotwithEmail()
 
-#################### GPIO init ####################
+########## GPIO init ##########
 
 GPIO.setwarnings(False)
 
@@ -152,20 +178,18 @@ GPIO.setup(pinPIR, GPIO.IN)
 GPIO.add_event_detect(pinPIR, GPIO.RISING,callback = getPIR, bouncetime=50)
 
 
-#################### Init ####################
+########## Init ##########
 
 global disp
 disp = MyST7735.init_ST7735()
 
 # Display the Login Title and Member
+# Close Testing
+#MyComponent.Buzzer(False)
+#MyComponent.playMusic()
+#MyST7735.DisplayLogin(disp)
 
-"""
-MyComponent.Buzzer(False)
-MyComponent.playMusic()
-MyST7735.DisplayLogin(disp)
-"""
-
-#################### Main Program ####################
+########## Main Program ##########
 try:
     while True:
         
@@ -184,23 +208,42 @@ try:
         if not OpenCV_Detecting:
             ultraSoundnow = MyComponent.Ultrasound()
             if ultraSoundnow <= ultraSoundRange:
-                # Open Detect Mode
+                # Close Testing
                 OpenCV_Detecting = True
                 time_getUltraSound = time.time() + time_addNextUltraSound
-                # Open Extra Code For OpenCV
+                # Open Extra Code
                 subprocess.Popen(["python", 'ExtraOpenCV.py'])
-                # Music
-                MyComponent.playSomeoneInMusic()
-                # add customer Count
-                customCount = customCount + 1
-                print("Total Customer : {0} , NoMask Customer : {1}".format(customCount, customCountNoMask))
             else:
                 pass
         else:
             if time.time() >= time_getUltraSound:
-                GetOpenCVResult()
+                openCSV()
                 OpenCV_Detecting = False
 
+        """
+        # UltraSound and OpenCV
+        if not OpenCV_Detecting:
+            ultraSoundnow = MyComponent.Ultrasound()
+            if ultraSoundnow <= ultraSoundRange:
+                # Close Testing
+                OpenCV_Detecting = True
+                time_getUltraSound = time.time() + time_addNextUltraSound
+            else:
+                pass
+        else:
+            if time.time() <= time_getUltraSound:
+                AddOpenCVCount(MyOpenCV.DetectfaceMask(cameraNumber))
+            else:
+                # it will check the distance, if less than 100 will keep on detect
+                DetectingMask()
+                ultraSoundnow = MyComponent.Ultrasound()
+                if ultraSoundnow <= ultraSoundRange:
+                    OpenCV_Detecting = True
+                    time_getUltraSound = time.time() + time_addNextUltraSound
+                    AddOpenCVCount(MyOpenCV.DetectfaceMask(cameraNumber))
+                else:
+                    OpenCV_Detecting = False
+        """
         # Change LCD
         if time.time() >= time_changeLCD:
             changeLCD()
