@@ -48,7 +48,7 @@ ultraSoundnow = 0
 """
 ultraSoundRange = 100
 """
-ultraSoundRange = 1
+ultraSoundRange = 100
 
 # For checking Mask
 OpenCV_Detecting = False
@@ -68,7 +68,8 @@ def getPIR(channel):
     time_closeLED = time.time()  + time_addNextLED
     
     print("Get Moving")
-    
+    # set the floor
+    MyST7735.SetFloor(1, True)
     if not LEDon:
         LEDon = MyComponent.LEDonOff(True)
 
@@ -159,11 +160,11 @@ disp = MyST7735.init_ST7735()
 
 # Display the Login Title and Member
 
-"""
+
 MyComponent.Buzzer(False)
 MyComponent.playMusic()
 MyST7735.DisplayLogin(disp)
-"""
+
 
 #################### Main Program ####################
 try:
@@ -179,6 +180,8 @@ try:
         # Set LED
         if time.time() >= time_closeLED and LEDon:
             LEDon = MyComponent.LEDonOff(False)
+            # close the LED
+            MyST7735.SetFloor(1, False)
         
         # UltraSound and OpenCV
         if not OpenCV_Detecting:
@@ -221,3 +224,5 @@ finally:
     MyOpenCV.CloseAllWindoes()
     print("End of Program")
     GPIO.cleanup()
+    
+    

@@ -12,6 +12,8 @@ from PIL import Image, ImageDraw, ImageFont
 
 # Font
 font_0 = ImageFont.truetype("Font/DejaVuSans.ttf", 12)
+font_0a = ImageFont.truetype("Font/DejaVuSans.ttf", 16)
+# DTH11
 # login Title
 font_1 = ImageFont.truetype('Font/AntiqueQuestSt.ttf',16)
 # Member Name
@@ -25,6 +27,7 @@ floor_1 = False
 floor_2 = False
 floor_3 = False
 
+# init the ST7735
 def init_ST7735():
     cs_pin = digitalio.DigitalInOut(board.CE0)
     dc_pin = digitalio.DigitalInOut(board.D25)
@@ -221,8 +224,8 @@ def DisplayDHT11(disp, humidity, temperature):
     global floor_1
     global floor_2
     global floor_3
-    global font_0
-    font = font_0
+    global font_1
+    font = font_1
     
     BORDER = 2
     
@@ -268,24 +271,26 @@ def DisplayDHT11(disp, humidity, temperature):
     
     (font_width, font_height) = font.getsize(text_temp)
     draw.text(
-        (width // 2 - font_width // 2, height // 4 - font_height // 2),
+        (5, 30),
         text_temp,
-        font = font_0,
+        font = font_0a,
         fill=MyColor.Color("BLACK"),
     )
     
+    # Set center ==> (width // 2 - font_width // 2, height // 2 - font_height // 2)
+    
     (font_width, font_height) = font.getsize(text_humi)
     draw.text(
-        (width // 2 - font_width // 2, height // 2 - font_height // 2),
+        (5, 50),
         text_humi,
-        font = font_0,
+        font = font_0a,
         fill=MyColor.Color("BLACK"),
     )
     
     img.paste(img_floor_1, (106 ,0))
     img.paste(img_floor_2, (124 ,0))
     img.paste(img_floor_3, (142 ,0))
-    disp.image(img)   
+    disp.image(ImageProcess(img))   
     #print("print Temperature completed")
 
 def DisplayCamera(disp, img):
@@ -315,10 +320,40 @@ def DisplayCamera(disp, img):
     disp.image(img)
 
 
-
-def ImageProcess():
-    (w, h) = img.size
+# for change the color
+def ImageProcess(image):
+    (w, h) = image.size
     for i in range(0, w-1):
         for j in range(0, h-1):
-            (r,g,b) = img.getpixel((i, j))
-            img.putpixel((i, j), (b, g, r))
+            (r,g,b) = image.getpixel((i, j))
+            image.putpixel((i, j), (b, g, r))
+    return image
+
+# setting the Float
+def SetFloor(num, onOff):
+    global floor_1
+    global floor_2
+    global floor_3
+    if num == 1:
+        if onOff:
+            floor_1 = True
+        else:
+            floor_1 = False
+            
+    if num == 2:
+        if onOff:
+            floor_2 = True
+        else:
+            floor_2 = False
+            
+    if num == 3:
+        if onOff:
+            floor_3 = True
+        else:
+            floor_3 = False
+    
+    if not (num == 1 or num == 2 or num == 3):
+        print("floor input error")
+        floor_1 = False
+        floor_2 = False
+        floor_3 = False
