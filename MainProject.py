@@ -125,6 +125,7 @@ def GetOpenCVResult():
     if result == "not_weared_mask":
         print("No Mask")
         customCountNoMask = customCountNoMask + 1
+        MyMongoDB.UploadCustomer(customCount, NoMaskCustomer)
         MyLCD1602.DisplayLCD_OpenCV(False)
         MyComponent.Buzzer(True)
         MyComponent.playSomeoneNoMaskMusic()
@@ -221,6 +222,8 @@ Weather_data = MyWeather.GetWeatherReport()
 """
 MyMongoDB.InitMyDB()
 MyMongoDB.GetDHT11()
+customCount = MyMongoDB.GetCustomer()
+customCountNoMask = MyMongoDB.GetNoMaskCustomer()
 
 #################### Main Program ####################
 try:
@@ -270,6 +273,7 @@ try:
                 # add customer Count
                 customCount = customCount + 1
                 print("Total Customer : {0} , NoMask Customer : {1}".format(customCount, customCountNoMask))
+                MyMongoDB.UploadCustomer(customCount, NoMaskCustomer)
             else:
                 pass
         else:

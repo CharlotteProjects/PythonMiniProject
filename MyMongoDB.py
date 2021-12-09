@@ -32,3 +32,34 @@ def GetDHT11():
     result = MyDHT11.find({"Temp":"23"})
     print(result)
     print(list(result))
+
+
+def UploadCustomer(count, noMask):
+    global myDB
+    MyCustomer = myDB["CustomerCount"]
+    
+    MyCustomer.update_one(
+      {"Date":"2021-12-9"},
+      {"$set": {"Customer":count}}
+    )
+        
+    MyCustomer.update_one(
+      {"Date":"2021-12-9"},
+      {"$set": {"NoMaskCustomer":noMask}}
+    )
+    print("up to DB completed")
+
+def GetCustomer():
+    global myDB
+    MyCustomer = myDB["CustomerCount"]
+    result = MyCustomer.find_one({"Date":"2021-12-9"})
+    print(result)
+    return result["Customer"]
+
+
+def GetNoMaskCustomer():
+    global myDB
+    MyCustomer = myDB["CustomerCount"]
+    result = MyCustomer.find_one({"Date":"2021-12-9"})
+    print(result)
+    return result["NoMaskCustomer"]
