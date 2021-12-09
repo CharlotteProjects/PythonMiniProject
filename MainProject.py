@@ -19,6 +19,7 @@ import MyLCD1602
 import MyOpenCV
 import MyKeypad
 import MyWeather
+import MyMongoDB
 
 import RPi.GPIO as GPIO
 import subprocess
@@ -42,11 +43,10 @@ class MyDelegate(btle.DefaultDelegate):
         else:
             MyST7735.SetFloor(2, False)
             print("off")
-        
-
+    
 
 #################### Time Variable ####################
-
+uploadTime = 0                            # every 5 time will upload
 time_addNextDHT11 = 4            # every 4 second get DHT11
 time_getDHT11 = time.time()    # next time for getting  DHT11
 
@@ -182,6 +182,17 @@ def CheckingInput(num):
     elif num == "D":
         MyOpenCV.ScreenShotwithEmail()
 
+#---------------------------------------------- BLE Initialisation ----------------------------------------------
+def InitBLE():
+    global p
+    p = btle.Peripheral('7c:9e:bd:04:bf:46') # address
+    p.setDelegate(MyDelegate())
+    svc = p.getServiceByUUID("6E400001-B5A3-F393-E0A9-E50E24DCCA9E")
+    ch = svc.getCharacteristics("6E400003-B5A3-F393-E0A9-E50E24DCCA9E")[0]
+
+    setup_data = b"\x01\00"
+    p.writeCharacteristic(ch.valHandle+1, setup_data)
+
 #################### GPIO init ####################
 
 GPIO.setwarnings(False)
@@ -200,35 +211,39 @@ disp = MyST7735.init_ST7735()
 
 # Display the Login Title and Member
 
-# Initialisation  -------
-p = btle.Peripheral('7c:9e:bd:04:bf:46') # address
-p.setDelegate(MyDelegate())
-svc = p.getServiceByUUID("6E400001-B5A3-F393-E0A9-E50E24DCCA9E")
-ch = svc.getCharacteristics("6E400003-B5A3-F393-E0A9-E50E24DCCA9E")[0]
-
-setup_data = b"\x01\00"
-p.writeCharacteristic(ch.valHandle+1, setup_data)
 
 """
 MyComponent.Buzzer(False)
 MyComponent.playMusic()
+InitBLE()
 MyST7735.DisplayLogin(disp)
-"""
 Weather_data = MyWeather.GetWeatherReport()
+"""
+MyMongoDB.InitMyDB()
+MyMongoDB.GetDHT11()
 
 #################### Main Program ####################
 try:
     while True:
         
+        # Get Input
         CheckingInput(MyKeypad.DetectKeypad())
         
-        if p.waitForNotifications(1.0):
-            continue
+        # Get BLE
+        try:
+            if p.waitForNotifications(1.0):
+                continue
+        except:
+                pass
 
         # Get DHT11
         if time.time() >= time_getDHT11 and not OpenCV_Detecting:
             time_getDHT11 = time.time() + time_addNextDHT11
             humi, temp = MyComponent.GetDHT11()
+            uploadTime = uploadTime + 1
+            if uploadTime >= 5:
+                uploadTime = 0
+                MyMongoDB.UploadDHT11(humi, temp)
 
         # Set LED
         if time.time() >= time_closeLED and LEDon:
