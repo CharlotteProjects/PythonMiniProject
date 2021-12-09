@@ -2,6 +2,8 @@
 
 import MyColor
 import time
+import json
+import requests
 
 # ST7735 library
 import digitalio, board
@@ -11,6 +13,7 @@ import adafruit_rgb_display.st7735 as st7735
 from PIL import Image, ImageDraw, ImageFont
 
 # Font
+font_0b = ImageFont.truetype("Font/DejaVuSans.ttf", 10)
 font_0 = ImageFont.truetype("Font/DejaVuSans.ttf", 12)
 font_0a = ImageFont.truetype("Font/DejaVuSans.ttf", 16)
 # DTH11
@@ -19,6 +22,7 @@ font_1 = ImageFont.truetype('Font/AntiqueQuestSt.ttf',16)
 # Member Name
 font_2 = ImageFont.truetype('Font/DevinneSwash.ttf',14)
 font_2a = ImageFont.truetype('Font/DevinneSwash.ttf',11)
+font_2b = ImageFont.truetype('Font/DevinneSwash.ttf',18)
 
 font_3 = ImageFont.truetype('Font/Cretino.TTF', 12)
 font_4 = ImageFont.truetype('Font/AceRecords.ttf',12)
@@ -267,21 +271,30 @@ def DisplayDHT11(disp, humidity, temperature):
     #draw.rectangle((BORDER, BORDER, width-BORDER, height-BORDER-1), outline = MyColor.Color("WHITE"), fill = MyColor.Color("WHITE"))
     
     text_temp = ("Temperature: %d C" % temperature)
+    tempF = ((temperature * 9) / 5) + 32
+    text_tempF = ("Temperature: %d F" % tempF)
     text_humi = ("Humidity: %d %%" % humidity)
     
     (font_width, font_height) = font.getsize(text_temp)
     draw.text(
-        (5, 30),
+        (5, 40),
         text_temp,
         font = font_0a,
         fill=MyColor.Color("BLACK"),
     )
     
+    (font_width, font_height) = font.getsize(text_temp)
+    draw.text(
+        (5, 70),
+        text_tempF,
+        font = font_0a,
+        fill=MyColor.Color("BLACK"),
+    )
     # Set center ==> (width // 2 - font_width // 2, height // 2 - font_height // 2)
     
     (font_width, font_height) = font.getsize(text_humi)
     draw.text(
-        (5, 50),
+        (5, 100),
         text_humi,
         font = font_0a,
         fill=MyColor.Color("BLACK"),
@@ -292,6 +305,63 @@ def DisplayDHT11(disp, humidity, temperature):
     img.paste(img_floor_3, (142 ,0))
     disp.image(ImageProcess(img))   
     #print("print Temperature completed")
+
+
+# Display Future Temp
+def DisplayFutureTemp(disp, weather_data):
+    global font_0
+    global font_0b
+    global font_2b
+    font = font_0
+    
+    BORDER = 2
+    
+    if disp.rotation % 180 == 90:
+        height = disp.width
+        width = disp.height
+    else:
+        width = disp.width
+        height = disp.height
+
+    # White backgound
+    #img = Image.new("RGB", (width, height))
+    # My Background
+    img = Image.open("Picture/background.jpg")
+    img = img.resize((width, height), Image.ANTIALIAS)
+    draw = ImageDraw.Draw(img)
+    
+    #draw.rectangle((0, 0, width, height), outline = MyColor.Color("BLACK"), fill = MyColor.Color("BLACK"))
+    #draw.rectangle((BORDER, BORDER, width-BORDER, height-BORDER-1), outline = MyColor.Color("WHITE"), fill = MyColor.Color("WHITE"))
+    text_title = "Weather Report"
+    draw.text(
+        (0, 0),
+        text_title,
+        font = font_2b,
+        fill=MyColor.Color("BLUE"),
+    )
+    
+    text_topic = "Date : | Min Temp: | Max Temp :"
+    (font_width, font_height) = font.getsize(text_topic)
+    draw.text(
+        (5, 28),
+        text_topic,
+        font = font_0b,
+        fill=MyColor.Color("BLACK"),
+    )
+    # Set center ==> (width // 2 - font_width // 2, height // 2 - font_height // 2)
+    
+    for i in range (0, 4):
+        text_mon = ("{0} | {1:.1f} | {2:.1f}".format(weather_data[i]["applicable_date"], weather_data[i]["min_temp"], weather_data[i]["max_temp"]))
+        draw.text(
+            (5,  48 + (i * 20)),
+            text_mon,
+            font = font_0,
+            fill=MyColor.Color("BLACK"),
+        )
+    
+    disp.image(ImageProcess(img))   
+    #print("print Temperature completed")
+
 
 def DisplayCamera(disp, img):
     global font_1

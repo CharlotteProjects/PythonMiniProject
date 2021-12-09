@@ -18,11 +18,32 @@ import MyST7735
 import MyLCD1602
 import MyOpenCV
 import MyKeypad
+import MyWeather
 
 import RPi.GPIO as GPIO
 import subprocess
 import time
 import csv
+
+from bluepy import btle
+
+class MyDelegate(btle.DefaultDelegate):
+    def __init__(self):
+        btle.DefaultDelegate.__init__(self)
+        print("init BLE")
+
+    def handleNotification(self, cHandle, data):
+        print(type(data))
+        i = int.from_bytes(data, byteorder='big')
+        print(i)
+        if i == 1:
+            MyST7735.SetFloor(2, True)
+            print("on")
+        else:
+            MyST7735.SetFloor(2, False)
+            print("off")
+        
+
 
 #################### Time Variable ####################
 
@@ -53,6 +74,7 @@ ultraSoundRange = 10
 # For checking Mask
 OpenCV_Detecting = False
 DisplayCameraInSt7735 = False
+DisplayWeather = False
 
 # set the daflaut camera
 cameraNumber = 0
@@ -121,9 +143,11 @@ def CheckingInput(num):
     global cameraNumber
     global disp
     global DisplayCameraInSt7735
+    global DisplayWeather
     global OpenCV_Detecting
     global time_getUltraSound
     global time_addNextUltraSound
+    global Weather_data
     
     if num != "-":
         print(num)
@@ -133,6 +157,7 @@ def CheckingInput(num):
         MyOpenCV.CloseAllWindoes()
         DisplayCameraInSt7735 = False
         OpenCV_Detecting = False
+        DisplayWeather = False
         
     elif num == "2":
         time_getUltraSound = time.time() + time_addNextUltraSound
@@ -140,7 +165,12 @@ def CheckingInput(num):
         MyOpenCV.DisplayCamera(True, disp)
         DisplayCameraInSt7735 = True
         OpenCV_Detecting = True
-
+        DisplayWeather = False
+        
+    elif num == "3":
+        MyST7735.DisplayFutureTemp(disp, Weather_data)
+        DisplayWeather = True
+        
     elif num == "A":
         cameraNumber = 0
         print("Change to Carmera A")
@@ -170,17 +200,30 @@ disp = MyST7735.init_ST7735()
 
 # Display the Login Title and Member
 
+# Initialisation  -------
+p = btle.Peripheral('7c:9e:bd:04:bf:46') # address
+p.setDelegate(MyDelegate())
+svc = p.getServiceByUUID("6E400001-B5A3-F393-E0A9-E50E24DCCA9E")
+ch = svc.getCharacteristics("6E400003-B5A3-F393-E0A9-E50E24DCCA9E")[0]
+
+setup_data = b"\x01\00"
+p.writeCharacteristic(ch.valHandle+1, setup_data)
+
 """
 MyComponent.Buzzer(False)
 MyComponent.playMusic()
 MyST7735.DisplayLogin(disp)
-
 """
+Weather_data = MyWeather.GetWeatherReport()
+
 #################### Main Program ####################
 try:
     while True:
         
         CheckingInput(MyKeypad.DetectKeypad())
+        
+        if p.waitForNotifications(1.0):
+            continue
 
         # Get DHT11
         if time.time() >= time_getDHT11 and not OpenCV_Detecting:
@@ -225,7 +268,8 @@ try:
 
         # Display DHT11
         if not DisplayCameraInSt7735:
-            MyST7735.DisplayDHT11(disp, humi, temp)
+            if not DisplayWeather:
+                MyST7735.DisplayDHT11(disp, humi, temp)
         else:
             # Display Face Detection
             #print(cameraNumber)
