@@ -27,12 +27,16 @@ GPIO.setup(C4, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 def readLine(line, characters):
     GPIO.output(line, GPIO.HIGH)
     if(GPIO.input(C1) == 1):
+        GPIO.output(line, GPIO.LOW)
         return characters[0]
     if(GPIO.input(C2) == 1):
+        GPIO.output(line, GPIO.LOW)
         return characters[1]
     if(GPIO.input(C3) == 1):
+        GPIO.output(line, GPIO.LOW)
         return characters[2]
     if(GPIO.input(C4) == 1):
+        GPIO.output(line, GPIO.LOW)
         return characters[3]
     GPIO.output(line, GPIO.LOW)
     return "-"

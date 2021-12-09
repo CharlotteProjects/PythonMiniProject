@@ -75,11 +75,7 @@ def DetectfaceMask(capNum):
     # 2 = "not_weared_mask"
     result = 0
     
-    if defaultCam != -1 or defaultCam != 0 :
-        cap = cv2.VideoCapture(defaultCam)
-    else:
-        # Read video
-        cap = cv2.VideoCapture(capNum)
+    cap = cv2.VideoCapture(capNum)
 
     # Get individual frame
     ret, img = cap.read()
@@ -98,7 +94,7 @@ def DetectfaceMask(capNum):
                 defaultCam = i
             except:
                 print("No Camera {0}".format(i))
-
+    saveImg = img
     # Convert image in black and white
     (thresh, black_and_white) = cv2.threshold(gray, bw_threshold, 255, cv2.THRESH_BINARY)
     cv2.imshow('black_and_white', black_and_white)

@@ -42,10 +42,10 @@ def init_ST7735():
         cs=cs_pin,
         dc=dc_pin,
         rst=reset_pin,
-        rotation=270,
+        rotation=90,
         baudrate=BAUDRATE,
-        x_offset = 2,
-        y_offset = 2,
+        x_offset = 0,
+        y_offset = 1,
     )
     return disp
 

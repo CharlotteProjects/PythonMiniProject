@@ -29,7 +29,7 @@ import csv
 time_addNextDHT11 = 4            # every 4 second get DHT11
 time_getDHT11 = time.time()    # next time for getting  DHT11
 
-time_addNextLED = 10               # every 10 second close LED
+time_addNextLED = 5               # every 5 second close LED
 time_closeLED = time.time()      # next time for closing LED
 
 time_addNextLCD = 6                 # every 6 second change LCD
@@ -48,7 +48,7 @@ ultraSoundnow = 0
 """
 ultraSoundRange = 100
 """
-ultraSoundRange = 100
+ultraSoundRange = 10
 
 # For checking Mask
 OpenCV_Detecting = False
@@ -93,7 +93,7 @@ def GetOpenCVResult():
     global customCountNoMask
     print("open the openCV.csv")
     result = ""
-    with open('/home/pi/Project/openCVResult.csv', 'r') as file:
+    with open('/home/pi/Project/csv/openCVResult.csv', 'r') as file:
         csvreader = csv.reader(file)
         header = next(csvreader)
         for row in csvreader:
@@ -121,16 +121,26 @@ def CheckingInput(num):
     global cameraNumber
     global disp
     global DisplayCameraInSt7735
+    global OpenCV_Detecting
+    global time_getUltraSound
+    global time_addNextUltraSound
     
     if num != "-":
         print(num)
     
     if num == "1":
         MyOpenCV.DisplayCamera(False)
+        MyOpenCV.CloseAllWindoes()
         DisplayCameraInSt7735 = False
+        OpenCV_Detecting = False
+        
     elif num == "2":
+        time_getUltraSound = time.time() + time_addNextUltraSound
+        print(time_getUltraSound)
         MyOpenCV.DisplayCamera(True, disp)
         DisplayCameraInSt7735 = True
+        OpenCV_Detecting = True
+
     elif num == "A":
         cameraNumber = 0
         print("Change to Carmera A")
@@ -160,12 +170,12 @@ disp = MyST7735.init_ST7735()
 
 # Display the Login Title and Member
 
-
+"""
 MyComponent.Buzzer(False)
 MyComponent.playMusic()
 MyST7735.DisplayLogin(disp)
 
-
+"""
 #################### Main Program ####################
 try:
     while True:
@@ -183,15 +193,20 @@ try:
             # close the LED
             MyST7735.SetFloor(1, False)
         
+
         # UltraSound and OpenCV
         if not OpenCV_Detecting:
+            #ultraSoundnow =120
             ultraSoundnow = MyComponent.Ultrasound()
             if ultraSoundnow <= ultraSoundRange:
                 # Open Detect Mode
                 OpenCV_Detecting = True
                 time_getUltraSound = time.time() + time_addNextUltraSound
                 # Open Extra Code For OpenCV
-                subprocess.Popen(["python", 'ExtraOpenCV.py'])
+                if cameraNumber == 0:
+                    subprocess.Popen(["python3", 'ExtraOpenCV.py'])
+                else:
+                    subprocess.Popen(["python3", 'ExtraOpenCV2.py'])
                 # Music
                 MyComponent.playSomeoneInMusic()
                 # add customer Count
@@ -208,9 +223,15 @@ try:
         if time.time() >= time_changeLCD:
             changeLCD()
 
-        # Display
+        # Display DHT11
         if not DisplayCameraInSt7735:
             MyST7735.DisplayDHT11(disp, humi, temp)
+        else:
+            # Display Face Detection
+            #print(cameraNumber)
+            MyOpenCV.DetectfaceMask(cameraNumber)
+            # Cannot same time detect
+            time_getUltraSound = time.time() + time_addNextUltraSound
 
         # if no OpenCV detecting , it will wait for 0.1s
         if not OpenCV_Detecting:

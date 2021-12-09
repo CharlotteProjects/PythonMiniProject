@@ -145,4 +145,4 @@ def ScreenShotwithEmail():
         print("Save Compoleted")
         MyEmail.SendEmail(str(dateTime)+'.png')
 
-faceMask(0)
+faceMask(2)
