@@ -363,6 +363,68 @@ def DisplayFutureTemp(disp, weather_data):
     #print("print Temperature completed")
 
 
+# Display Total Customer
+def DisplayCustomer(disp, total, noMask):
+    global font_0
+    global font_0b
+    global font_2b
+    font = font_0
+    
+    BORDER = 2
+    
+    if disp.rotation % 180 == 90:
+        height = disp.width
+        width = disp.height
+    else:
+        width = disp.width
+        height = disp.height
+
+    # White backgound
+    #img = Image.new("RGB", (width, height))
+    # My Background
+    img = Image.open("Picture/background.jpg")
+    img = img.resize((width, height), Image.ANTIALIAS)
+    draw = ImageDraw.Draw(img)
+    
+    #draw.rectangle((0, 0, width, height), outline = MyColor.Color("BLACK"), fill = MyColor.Color("BLACK"))
+    #draw.rectangle((BORDER, BORDER, width-BORDER, height-BORDER-1), outline = MyColor.Color("WHITE"), fill = MyColor.Color("WHITE"))
+    text_title = "Customer Count"
+    draw.text(
+        (0, 0),
+        text_title,
+        font = font_2b,
+        fill=MyColor.Color("Blue"),
+    )
+    
+    text_topic = "Date : 2021-12-9"
+    (font_width, font_height) = font.getsize(text_topic)
+    draw.text(
+        (5, 28),
+        text_topic,
+        font = font_0,
+        fill=MyColor.Color("BLACK"),
+    )
+    # Set center ==> (width // 2 - font_width // 2, height // 2 - font_height // 2)
+
+    text_customer = "Total Customer : {0}".format(total)
+    draw.text(
+        (5, 56),
+        text_customer,
+        font = font_0,
+        fill=MyColor.Color("BLACK"),
+    )
+    
+    text_noMask = "No Mask : {0}".format(noMask)
+    draw.text(
+        (5, 86),
+        text_noMask,
+        font = font_0,
+        fill=MyColor.Color("BLACK"),
+    )
+
+    disp.image(ImageProcess(img))   
+
+
 def DisplayCamera(disp, img):
     global font_1
     font = font_1

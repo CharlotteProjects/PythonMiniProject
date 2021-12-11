@@ -36,8 +36,8 @@ def GetDHT11():
     global temp
 
     sensor = Adafruit_DHT.DHT11
-    #humidity, temperature = Adafruit_DHT.read_retry(sensor, pinDHT11)
-    humidity, temperature = Adafruit_DHT.read(sensor, pinDHT11)
+    humidity, temperature = Adafruit_DHT.read_retry(sensor, pinDHT11)
+    #humidity, temperature = Adafruit_DHT.read(sensor, pinDHT11)
     if humidity is not None and temperature is not None:
         print('Temp={0:0.1f} C*  Humidity={1:0.1f} %'.format(temperature, humidity))
         humi = humidity
@@ -121,13 +121,20 @@ def playSomeoneInMusic():
     pygame.mixer.init()
     pygame.mixer.music.load('Music/in.mp3')
     pygame.mixer.music.play()
-    time.sleep(1)
+    time.sleep(3)
     playMusic()
 
 
 def playSomeoneNoMaskMusic():
     pygame.mixer.init()
-    pygame.mixer.music.load('Music/nomask.mp3')
+    pygame.mixer.music.load('Music/nomask2.mp3')
     pygame.mixer.music.play()
-    time.sleep(1)
+    time.sleep(3)
     playMusic()
+
+#Testing
+"""
+while 1 :
+    print(GetDHT11())
+    print(Ultrasound())
+"""

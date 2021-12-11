@@ -34,15 +34,14 @@ class MyDelegate(btle.DefaultDelegate):
         print("init BLE")
 
     def handleNotification(self, cHandle, data):
-        print(type(data))
         i = int.from_bytes(data, byteorder='big')
-        print(i)
+        #print(i)
         if i == 1:
             MyST7735.SetFloor(2, True)
-            print("on")
+            #print("on")
         else:
             MyST7735.SetFloor(2, False)
-            print("off")
+            #print("off")
     
 
 #################### Time Variable ####################
@@ -125,7 +124,7 @@ def GetOpenCVResult():
     if result == "not_weared_mask":
         print("No Mask")
         customCountNoMask = customCountNoMask + 1
-        MyMongoDB.UploadCustomer(customCount, NoMaskCustomer)
+        MyMongoDB.UploadCustomer(customCount, customCountNoMask)
         MyLCD1602.DisplayLCD_OpenCV(False)
         MyComponent.Buzzer(True)
         MyComponent.playSomeoneNoMaskMusic()
@@ -149,6 +148,8 @@ def CheckingInput(num):
     global time_getUltraSound
     global time_addNextUltraSound
     global Weather_data
+    global customCount
+    global customCountNoMask
     
     if num != "-":
         print(num)
@@ -159,6 +160,7 @@ def CheckingInput(num):
         DisplayCameraInSt7735 = False
         OpenCV_Detecting = False
         DisplayWeather = False
+        MyComponent.Buzzer(False)
         
     elif num == "2":
         time_getUltraSound = time.time() + time_addNextUltraSound
@@ -167,21 +169,37 @@ def CheckingInput(num):
         DisplayCameraInSt7735 = True
         OpenCV_Detecting = True
         DisplayWeather = False
+        MyComponent.Buzzer(False)
         
     elif num == "3":
         MyST7735.DisplayFutureTemp(disp, Weather_data)
         DisplayWeather = True
+        OpenCV_Detecting = False
+        MyComponent.Buzzer(False)
+        
+    elif num == "4":
+        MyST7735.DisplayCustomer(disp, customCount, customCountNoMask)
+        DisplayWeather = True
+        OpenCV_Detecting = False
+        MyComponent.Buzzer(False)
         
     elif num == "A":
         cameraNumber = 0
         print("Change to Carmera A")
+        MyComponent.Buzzer(False)
+        
     elif num == "B":
         cameraNumber = 2
         print("Change to Carmera B")
+        MyComponent.Buzzer(False)
+        
     elif num == "C":
         MyOpenCV.ScreenShot(cameraNumber)
+        MyComponent.Buzzer(False)
+        
     elif num == "D":
         MyOpenCV.ScreenShotwithEmail()
+        MyComponent.Buzzer(False)
 
 #---------------------------------------------- BLE Initialisation ----------------------------------------------
 def InitBLE():
@@ -213,15 +231,14 @@ disp = MyST7735.init_ST7735()
 # Display the Login Title and Member
 
 
-"""
+
 MyComponent.Buzzer(False)
 MyComponent.playMusic()
 InitBLE()
 MyST7735.DisplayLogin(disp)
 Weather_data = MyWeather.GetWeatherReport()
-"""
 MyMongoDB.InitMyDB()
-MyMongoDB.GetDHT11()
+#MyMongoDB.GetDHT11()
 customCount = MyMongoDB.GetCustomer()
 customCountNoMask = MyMongoDB.GetNoMaskCustomer()
 
@@ -273,7 +290,7 @@ try:
                 # add customer Count
                 customCount = customCount + 1
                 print("Total Customer : {0} , NoMask Customer : {1}".format(customCount, customCountNoMask))
-                MyMongoDB.UploadCustomer(customCount, NoMaskCustomer)
+                MyMongoDB.UploadCustomer(customCount, customCountNoMask)
             else:
                 pass
         else:

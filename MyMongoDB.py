@@ -39,12 +39,12 @@ def UploadCustomer(count, noMask):
     MyCustomer = myDB["CustomerCount"]
     
     MyCustomer.update_one(
-      {"Date":"2021-12-9"},
+      {"Date":"2021-12-11"},
       {"$set": {"Customer":count}}
     )
         
     MyCustomer.update_one(
-      {"Date":"2021-12-9"},
+      {"Date":"2021-12-11"},
       {"$set": {"NoMaskCustomer":noMask}}
     )
     print("up to DB completed")
@@ -52,7 +52,7 @@ def UploadCustomer(count, noMask):
 def GetCustomer():
     global myDB
     MyCustomer = myDB["CustomerCount"]
-    result = MyCustomer.find_one({"Date":"2021-12-9"})
+    result = MyCustomer.find_one({"Date":"2021-12-11"})
     print(result)
     return result["Customer"]
 
@@ -60,6 +60,6 @@ def GetCustomer():
 def GetNoMaskCustomer():
     global myDB
     MyCustomer = myDB["CustomerCount"]
-    result = MyCustomer.find_one({"Date":"2021-12-9"})
+    result = MyCustomer.find_one({"Date":"2021-12-11"})
     print(result)
     return result["NoMaskCustomer"]
