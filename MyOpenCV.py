@@ -129,14 +129,17 @@ def DetectfaceMask(capNum):
                     # For save image
                     saveImg = img
                     break
-    # print the detect
+    #print the detect
     #print(len(faces), len(faces_bw), len(mouth_rects))
 
     cv2.imshow('Mask Detection', img)
     
+    # For display the image in the ST7735
     if display == True and disp is not None:
         array = np.array(img)          # array is a numpy array 
+        # convert the array to the image
         image2 = Image.fromarray(array) 
+        # display image in the ST7735
         MyST7735.DisplayCamera(disp, image2)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -148,6 +151,7 @@ def DetectfaceMask(capNum):
     #cv2.destroyAllWindows()
     return result
 
+# Save the ScreenShot
 def ScreenShot(CamNum):
     global nowCarmera
     nowCarmera = CamNum
@@ -157,18 +161,20 @@ def ScreenShot(CamNum):
     cv2.imwrite(str(dateTime)+'.png', image)
     print("Save Compoleted")
 
-
+# For get image and send the Email
 def ScreenShotwithEmail():
     global saveImg
     if saveImg is None:
         print("No Image")
         return
     else:
+        # Save the image
         dateTime = time.strftime('%d%m%y_%H%M%S')
         cv2.imwrite(str(dateTime)+'.png', saveImg)
         print("Save Compoleted")
+        # send the Email
         MyEmail.SendEmail(str(dateTime)+'.png')
 
-
+# for closing the all OpenCV window
 def CloseAllWindoes():
     cv2.destroyAllWindows()

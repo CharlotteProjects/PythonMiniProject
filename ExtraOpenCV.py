@@ -134,6 +134,7 @@ def faceMask(capNum):
     # Release video
     #cap.release()
 
+# For get image and send the Email
 def ScreenShotwithEmail():
     global saveImg
     if saveImg is None:

@@ -5,8 +5,10 @@ from email import encoders
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 
+# For send the Email with image
 def SendEmail(pathName):
     COMMASPACE = ', '
+    # Email information
     sender = 'kei20324199@gmail.com'
     gmail_password = 'Kei2021a'
     recipients = ['kei20324199@gmail.com']

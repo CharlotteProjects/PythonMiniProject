@@ -33,6 +33,7 @@ floor_3 = False
 
 # init the ST7735
 def init_ST7735():
+    # set the pin
     cs_pin = digitalio.DigitalInOut(board.CE0)
     dc_pin = digitalio.DigitalInOut(board.D25)
     reset_pin = digitalio.DigitalInOut(board.D24)
@@ -51,12 +52,14 @@ def init_ST7735():
         x_offset = 0,
         y_offset = 1,
     )
+    # return the disp setting to the main script for using next time display ST7735
     return disp
 
 
-# Display Login
+# Display Login, it will display the login animation with our team member
 def DisplayLogin(disp):
     
+    # get the font setting from the global
     global font_1
     global font_2
     global font_2a
@@ -69,6 +72,7 @@ def DisplayLogin(disp):
         width = disp.width
         height = disp.height
 
+    # Display the system name text
     text_1 = "Smart"
     text_2 = "Security"
     text_3 = "System"
@@ -79,12 +83,15 @@ def DisplayLogin(disp):
 
     while not pass_1:
         
+        # it is the "fade in" and "fade out" Animation
         if hide == False:
             color = color - 10
         else:
             color = color + 10
 
-        # it will stay 3 second
+        # When the fade in to the color is 0 (Black Color )
+        # then it will stay 3 second
+        # After 3 second it will play the "fade out" Animation
         if color < 0:
             hide = True
             color = 0
@@ -94,6 +101,7 @@ def DisplayLogin(disp):
             color = 255
             pass_1 = True
     
+        # set the background
         img = Image.open("Picture/background.jpg")
         img = img.resize((width, height), Image.ANTIALIAS)
         draw = ImageDraw.Draw(img)
@@ -124,7 +132,7 @@ def DisplayLogin(disp):
         disp.image(img)
         time.sleep(0.06)
     
-# Display Name
+    # Display team members Name
     
     text_4 = "Member"
     text_5 = "Kwok Kei"
@@ -138,8 +146,12 @@ def DisplayLogin(disp):
     hide = False
     pass_1 = False
     
+    # After Display the system name text
+    # Then will display our team members Name
     while not pass_1:
         
+        # The function is the same will last
+        # it is the "fade in" and "fade out" Animation
         if hide == False:
             color = color - 10
         else:
@@ -241,10 +253,11 @@ def DisplayDHT11(disp, humidity, temperature):
         height = disp.height
 
     # White backgound
-    #img = Image.new("RGB", (width, height))
-    # My Background
+    # img = Image.new("RGB", (width, height))
+    # Set the My Background
     img = Image.open("Picture/background.jpg")
-    # Load Image
+
+    # Load the Light bulb Image for display the PIR is working or not
     if floor_1:
         img_floor_1 = Image.open("Picture/light_on_1.jpg")
     else:
@@ -260,7 +273,7 @@ def DisplayDHT11(disp, humidity, temperature):
     else:
         img_floor_3 = Image.open("Picture/light_off_3.jpg")
     
-    # Resize the picture
+    # Resize the Light bulb Image
     img_floor_1 = img_floor_1.resize((18, 30), Image.ANTIALIAS)
     img_floor_2 = img_floor_2.resize((18, 30), Image.ANTIALIAS)
     img_floor_3 = img_floor_3.resize((18, 30), Image.ANTIALIAS)
@@ -308,6 +321,7 @@ def DisplayDHT11(disp, humidity, temperature):
 
 
 # Display Future Temp
+# This result was getting from the weather report website
 def DisplayFutureTemp(disp, weather_data):
     global font_0
     global font_0b
@@ -323,15 +337,12 @@ def DisplayFutureTemp(disp, weather_data):
         width = disp.width
         height = disp.height
 
-    # White backgound
-    #img = Image.new("RGB", (width, height))
-    # My Background
+    # Setting the Background
     img = Image.open("Picture/background.jpg")
     img = img.resize((width, height), Image.ANTIALIAS)
     draw = ImageDraw.Draw(img)
     
-    #draw.rectangle((0, 0, width, height), outline = MyColor.Color("BLACK"), fill = MyColor.Color("BLACK"))
-    #draw.rectangle((BORDER, BORDER, width-BORDER, height-BORDER-1), outline = MyColor.Color("WHITE"), fill = MyColor.Color("WHITE"))
+    # Set the title
     text_title = "Weather Report"
     draw.text(
         (0, 0),
@@ -340,6 +351,7 @@ def DisplayFutureTemp(disp, weather_data):
         fill=MyColor.Color("BLUE"),
     )
     
+    # Set the display list
     text_topic = "Date : | Min Temp: | Max Temp :"
     (font_width, font_height) = font.getsize(text_topic)
     draw.text(
@@ -348,8 +360,8 @@ def DisplayFutureTemp(disp, weather_data):
         font = font_0b,
         fill=MyColor.Color("BLACK"),
     )
-    # Set center ==> (width // 2 - font_width // 2, height // 2 - font_height // 2)
     
+    # Using a for loop for display the 4 day data in the ST7735
     for i in range (0, 4):
         text_mon = ("{0} | {1:.1f} | {2:.1f}".format(weather_data[i]["applicable_date"], weather_data[i]["min_temp"], weather_data[i]["max_temp"]))
         draw.text(
@@ -379,15 +391,12 @@ def DisplayCustomer(disp, total, noMask):
         width = disp.width
         height = disp.height
 
-    # White backgound
-    #img = Image.new("RGB", (width, height))
-    # My Background
+    # Setting the Background
     img = Image.open("Picture/background.jpg")
     img = img.resize((width, height), Image.ANTIALIAS)
     draw = ImageDraw.Draw(img)
     
-    #draw.rectangle((0, 0, width, height), outline = MyColor.Color("BLACK"), fill = MyColor.Color("BLACK"))
-    #draw.rectangle((BORDER, BORDER, width-BORDER, height-BORDER-1), outline = MyColor.Color("WHITE"), fill = MyColor.Color("WHITE"))
+    # Setting the title
     text_title = "Customer Count"
     draw.text(
         (0, 0),
@@ -404,7 +413,6 @@ def DisplayCustomer(disp, total, noMask):
         font = font_0,
         fill=MyColor.Color("BLACK"),
     )
-    # Set center ==> (width // 2 - font_width // 2, height // 2 - font_height // 2)
 
     text_customer = "Total Customer : {0}".format(total)
     draw.text(
@@ -424,7 +432,8 @@ def DisplayCustomer(disp, total, noMask):
 
     disp.image(ImageProcess(img))   
 
-
+# For display the camera image in the ST7735
+# This function is using by MyOpenCV.py
 def DisplayCamera(disp, img):
     global font_1
     font = font_1
@@ -462,6 +471,7 @@ def ImageProcess(image):
     return image
 
 # setting the Float
+# It will call by MainProject.py
 def SetFloor(num, onOff):
     global floor_1
     global floor_2

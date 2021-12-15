@@ -26,6 +26,7 @@ GPIO.setup(pin_USoundEcho, GPIO.IN)
 pinBuzzer = 26 # pin 37
 GPIO.setup(pinBuzzer, GPIO.OUT)
 
+# For store the one time humidity and temperature data
 humi = 0
 temp = 0
 
@@ -37,13 +38,15 @@ def GetDHT11():
 
     sensor = Adafruit_DHT.DHT11
     humidity, temperature = Adafruit_DHT.read_retry(sensor, pinDHT11)
-    #humidity, temperature = Adafruit_DHT.read(sensor, pinDHT11)
+    # humidity, temperature = Adafruit_DHT.read(sensor, pinDHT11)
     if humidity is not None and temperature is not None:
         print('Temp={0:0.1f} C*  Humidity={1:0.1f} %'.format(temperature, humidity))
         humi = humidity
         temp = temperature
+        # return the humidity, temperature data to the main script
         return humidity, temperature
     else:
+        # if Fail will return the last record
         print('Failed to get reading. return the last record!')
         return humi, temp
 
@@ -78,12 +81,14 @@ def Ultrasound():
     distance = elapsed * 34300
     distance = distance / 2
     print(distance)
+    # It will return the distance to the main script
     return distance
 
 
 def Buzzer(long):
     num = 260
     
+    # This is the short time buzz for start program
     time.sleep(0.3)
     for r in range(1000):
         for x in range(num):
@@ -91,6 +96,7 @@ def Buzzer(long):
         for x in range(num):
             GPIO.output(pinBuzzer, 0)
     
+    # This is the long time buzz for face detect a no mask customer
     if long:
         time.sleep(0.3)
         for r in range(1000):
@@ -106,17 +112,17 @@ def Buzzer(long):
             for x in range(num):
                 GPIO.output(pinBuzzer, 0)
 
-
+# Play the Music (BGM) in the bluetooth speaker
 def playMusic():
     pygame.mixer.init()
     pygame.mixer.music.load('Music/PalletTown.mp3')
     pygame.mixer.music.play()
 
-
+# Stop the Music
 def stopMusic():
     pygame.mixer.music.stop()
 
-
+# Play the Music (When a customer enter shop) in the bluetooth speaker
 def playSomeoneInMusic():
     pygame.mixer.init()
     pygame.mixer.music.load('Music/in.mp3')
@@ -124,17 +130,10 @@ def playSomeoneInMusic():
     time.sleep(3)
     playMusic()
 
-
+# Play the Music (When a customer who without mask)  in the bluetooth speaker
 def playSomeoneNoMaskMusic():
     pygame.mixer.init()
     pygame.mixer.music.load('Music/nomask2.mp3')
     pygame.mixer.music.play()
     time.sleep(3)
     playMusic()
-
-#Testing
-"""
-while 1 :
-    print(GetDHT11())
-    print(Ultrasound())
-"""
